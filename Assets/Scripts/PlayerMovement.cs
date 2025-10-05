@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -38,10 +39,12 @@ public class PlayerMovement : MonoBehaviour
     }
 
     Animator anim;
+    TwoBoneIKConstraint hand;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
+        hand = GetComponentInChildren<TwoBoneIKConstraint>();
 
         playerNum = (!isPlayerTwo) ? "1" : "2"; // Choose control scheme for each player
     }
@@ -56,6 +59,15 @@ public class PlayerMovement : MonoBehaviour
             canJump = false;
             Jump();
             Invoke(nameof(ResetJump), jumpCooldown); // Wait before reseting Jump
+        }
+
+        if (Input.GetAxisRaw("Reach" + playerNum) > 0f)
+        {
+            hand.weight = 1.0f;
+        }
+        else
+        {
+            hand.weight = 0f;
         }
     }
 
@@ -107,6 +119,7 @@ public class PlayerMovement : MonoBehaviour
             anim.SetBool("isWalking", true);
         else
             anim.SetBool("isWalking", false);
+
     }
 
     void Jump()
@@ -137,4 +150,5 @@ public class PlayerMovement : MonoBehaviour
     {
         return Vector3.ProjectOnPlane(moveDir, slopeHit.normal).normalized;
     }
+
 }
