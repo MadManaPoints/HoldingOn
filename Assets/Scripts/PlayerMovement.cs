@@ -34,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
     public HandHolding state;
     public bool attached;
+    public bool raiseHand;
     public enum HandHolding
     {
         holding,
@@ -73,6 +74,12 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             hand.weight = 0f;
+        }
+
+        if (attached)
+        {
+            float raise = Input.GetAxisRaw("Raise" + playerNum);
+            raiseHand = (raise > 0f) ? true : false;
         }
     }
 
