@@ -35,6 +35,7 @@ public class PlayerMovement : MonoBehaviour
     public HandHolding state;
     public bool attached;
     public bool raiseHand;
+    bool dpad;
     public enum HandHolding
     {
         holding,

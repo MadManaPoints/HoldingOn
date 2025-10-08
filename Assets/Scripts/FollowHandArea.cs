@@ -5,6 +5,8 @@ public class FollowHandArea : MonoBehaviour
     HandTarget handTarget;
     Vector3 targetPosition;
     Rigidbody rb;
+    [SerializeField] LayerMask excludeWall;
+    [SerializeField] LayerMask excludePlayer;
     void Start()
     {
         handTarget = HandTarget.target;
@@ -27,5 +29,14 @@ public class FollowHandArea : MonoBehaviour
     void Update()
     {
         targetPosition = new Vector3(handTarget.transform.position.x, handTarget.transform.position.y, handTarget.transform.position.z + 0.4f);
+
+        if (handTarget.handsIn == 2)
+        {
+            rb.excludeLayers = excludeWall;
+        }
+        else
+        {
+            rb.excludeLayers = excludePlayer;
+        }
     }
 }
