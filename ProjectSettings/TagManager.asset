@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Hand Area
+  - Hand
   layers:
   - Default
   - TransparentFX
@@ -16,6 +18,7 @@ TagManager:
   - 
   - 
   - isGround
+  - isReachZone
   - 
   - 
   - 
@@ -25,8 +28,7 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - Player
   - 
   - 
   - 

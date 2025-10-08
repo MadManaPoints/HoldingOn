@@ -33,6 +33,7 @@ public class PlayerMovement : MonoBehaviour
 
     Rigidbody rb;
     public HandHolding state;
+    public bool attached;
     public enum HandHolding
     {
         holding,
@@ -40,9 +41,13 @@ public class PlayerMovement : MonoBehaviour
 
     Animator anim;
     TwoBoneIKConstraint hand;
+    public SpringJoint joint;
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        joint = GetComponent<SpringJoint>();
         anim = GetComponentInChildren<Animator>();
         hand = GetComponentInChildren<TwoBoneIKConstraint>();
 
@@ -71,23 +76,20 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
     void FixedUpdate()
     {
         Movement();
     }
 
+
     void Update()
     {
-        // Ground check 
-        grounded = Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), Vector3.down, 0.7f, isGround);
-        //Debug.DrawLine(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z), Color.magenta);
-
-        // Handle drag
-        rb.linearDamping = (grounded) ? groundDrag : 0;
-
+        HoldHands();
+        GroundCheck();
         MyInput();
+        Animations();
     }
-
 
 
     void Movement()
@@ -114,13 +116,35 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.angularVelocity = Vector3.zero;
         }
-
-        if (rb.linearVelocity != Vector3.zero)
-            anim.SetBool("isWalking", true);
-        else
-            anim.SetBool("isWalking", false);
-
     }
+
+
+    void HoldHands()
+    {
+        if (!attached && joint.maxDistance != 10.0f)
+        {
+            joint.tolerance = 1000;
+            joint.maxDistance = 20.0f;
+        }
+
+        if (attached && joint.maxDistance != 0f)
+        {
+            joint.tolerance = 0f;
+            joint.maxDistance = 0f;
+        }
+    }
+
+
+    void GroundCheck()
+    {
+        // Ground check 
+        grounded = Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), Vector3.down, 0.7f, isGround);
+        //Debug.DrawLine(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z), Color.magenta);
+
+        // Handle drag
+        rb.linearDamping = (grounded) ? groundDrag : 0;
+    }
+
 
     void Jump()
     {
@@ -130,10 +154,12 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity += Vector3.up * jumpForce;
     }
 
+
     void ResetJump()
     {
         canJump = true;
     }
+
 
     bool OnSlope()
     {
@@ -146,9 +172,18 @@ public class PlayerMovement : MonoBehaviour
         return false;
     }
 
+
     Vector3 GetSlopeMoveDirection()
     {
         return Vector3.ProjectOnPlane(moveDir, slopeHit.normal).normalized;
     }
 
+
+    void Animations()
+    {
+        if (rb.linearVelocity != Vector3.zero)
+            anim.SetBool("isWalking", true);
+        else
+            anim.SetBool("isWalking", false);
+    }
 }

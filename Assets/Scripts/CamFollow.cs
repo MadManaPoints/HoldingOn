@@ -22,7 +22,7 @@ public class CamFollow : MonoBehaviour
         float offsetZ = Map(dist, 1.5f, 5.0f, -2.5f, -4.0f);
         offset = new Vector3(offset.x, offset.y, offsetZ);
 
-        print(offset);
+        //print(offset);
 
         //Debug.Log(dist);
         transform.position = Vector3.SmoothDamp(transform.position, center.position + offset, ref velocity, 0.3f);
