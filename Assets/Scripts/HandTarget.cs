@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class HandTarget : MonoBehaviour
@@ -12,6 +10,7 @@ public class HandTarget : MonoBehaviour
     Vector3 center;
     Vector3 targetPosition;
     Rigidbody rb;
+    Pairs pairs;
 
     void Awake()
     {
@@ -23,6 +22,7 @@ public class HandTarget : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         p1 = playerOne.GetComponent<PlayerMovement>();
         p2 = playerTwo.GetComponent<PlayerMovement>();
+        pairs = GameObject.Find("Canvas").GetComponent<Pairs>();
     }
 
     void FixedUpdate()
@@ -40,6 +40,12 @@ public class HandTarget : MonoBehaviour
 
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            pairs.PairGenerator();
+            pairs.active = true;
+        }
+
         // Target is center of players
         center = (playerOne.transform.position + playerTwo.transform.position) / 2.0f;
         targetPosition = new Vector3(center.x, yPos, center.z);
