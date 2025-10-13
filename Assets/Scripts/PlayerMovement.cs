@@ -1,4 +1,5 @@
 using System;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -32,14 +33,17 @@ public class PlayerMovement : MonoBehaviour
     Vector3 moveDir;
 
     Rigidbody rb;
-    public HandHolding state;
     public bool attached;
     public bool raiseHand;
     bool dpad;
-    public enum HandHolding
+    public PlayerState state;
+    public enum PlayerState
     {
         holding,
+        running,
+        pulling,
     }
+    public DetectPlayer moveableObj;
 
     Animator anim;
     TwoBoneIKConstraint hand;
@@ -79,8 +83,17 @@ public class PlayerMovement : MonoBehaviour
 
         if (attached)
         {
+            state = PlayerState.holding;
             float raise = Input.GetAxisRaw("Raise" + playerNum);
             raiseHand = (raise > 0f) ? true : false;
+        }
+        else if (Input.GetButton("Action" + playerNum) && moveableObj != null)
+        {
+            state = PlayerState.pulling;
+        }
+        else
+        {
+            state = PlayerState.running;
         }
     }
 
@@ -96,6 +109,7 @@ public class PlayerMovement : MonoBehaviour
         HoldHands();
         GroundCheck();
         MyInput();
+        StateHandler();
         Animations();
     }
 
@@ -103,6 +117,7 @@ public class PlayerMovement : MonoBehaviour
     void Movement()
     {
         Vector3 move = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
+        if (state == PlayerState.pulling) move.z = 0f;
 
         // Limit slope movement
         if (OnSlope())
@@ -115,7 +130,7 @@ public class PlayerMovement : MonoBehaviour
         rb.useGravity = !OnSlope();
 
         // Handle rotation
-        if (moveDir != Vector3.zero)
+        if (moveDir != Vector3.zero && !Input.GetButton("Action" + playerNum))
         {
             float angleDiff = Vector3.SignedAngle(transform.forward, moveDir, Vector3.up);
             rb.angularVelocity = new Vector3(rb.angularVelocity.x, angleDiff * 0.2f, rb.angularVelocity.z);
@@ -126,17 +141,39 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void StateHandler()
+    {
+        if (state == PlayerState.pulling)
+        {
+            moveSpeed = 0.5f;
+            if (moveableObj != null) moveableObj.transform.parent = this.transform;
+            anim.SetBool("isPulling", true);
+        }
+        else if (state == PlayerState.running)
+        {
+            moveSpeed = 3.5f;
+            if (moveableObj != null) moveableObj.transform.parent = null;
+            anim.SetBool("isPulling", false);
+        }
+        else
+        {
+            moveSpeed = 2.0f;
+        }
+    }
+
 
     void HoldHands()
     {
         if (!attached && joint.maxDistance != 10.0f)
         {
+            // Increase joint strength to lock hands
             joint.tolerance = 1000;
             joint.maxDistance = 20.0f;
         }
 
         if (attached && joint.maxDistance != 0f)
         {
+            // Decrease joint strength to unlock hands
             joint.tolerance = 0f;
             joint.maxDistance = 0f;
         }
@@ -189,9 +226,21 @@ public class PlayerMovement : MonoBehaviour
 
     void Animations()
     {
-        if (rb.linearVelocity != Vector3.zero)
-            anim.SetBool("isWalking", true);
+        if (moveDir != Vector3.zero)
+            anim.SetBool("isRunning", true);
         else
-            anim.SetBool("isWalking", false);
+            anim.SetBool("isRunning", false);
+
+        bool hasJumped = !grounded;
+        anim.SetBool("isJumping", hasJumped);
+
+        if (attached)
+        {
+            anim.SetBool("isHolding", true);
+        }
+        else
+        {
+            anim.SetBool("isHolding", false);
+        }
     }
 }

@@ -7,7 +7,7 @@ public class HandTarget : MonoBehaviour
     float yPos = 2.5f;
     [SerializeField] GameObject playerOne, playerTwo;
     PlayerMovement p1, p2;
-    Vector3 center;
+    public Vector3 center;
     Vector3 targetPosition;
     Rigidbody rb;
     Pairs pairs;
@@ -30,7 +30,7 @@ public class HandTarget : MonoBehaviour
         if (Vector3.Distance(targetPosition, transform.position) > 0.2f)
         {
             Vector3 dir = (targetPosition - transform.position).normalized;
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, dir * 2.0f, Time.fixedDeltaTime * 5.0f);
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, dir * 3.0f, Time.fixedDeltaTime * 5.0f);
         }
         else
         {
@@ -40,7 +40,7 @@ public class HandTarget : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             pairs.PairGenerator();
             pairs.active = true;
@@ -49,7 +49,7 @@ public class HandTarget : MonoBehaviour
         // Target is center of players
         center = (playerOne.transform.position + playerTwo.transform.position) / 2.0f;
         targetPosition = new Vector3(center.x, yPos, center.z);
-        yPos = (p1.raiseHand && p2.raiseHand) ? 3.2f : 2.5f;
+        yPos = (p1.raiseHand && p2.raiseHand) ? 3.1f : 2.5f;
         //Debug.Log(center);
     }
 

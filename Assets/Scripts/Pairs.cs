@@ -6,35 +6,34 @@ using System;
 
 public class Pairs : MonoBehaviour
 {
-    [SerializeField] GameObject display;
+    [SerializeField] GameObject display; // All text objects
     public bool active; // true when testing
-    float targetTime = 2.5f;
-    [SerializeField] TextMeshProUGUI[] leftPairs, rightPairs;
+    float targetTime = 2.5f; // Timer to close textbox
+    [SerializeField] TextMeshProUGUI[] leftPairs, rightPairs; // Text to display for each player
+
+    // Arrays of text for each player 
     String[] pairsA = new String[] { "Peanut Butter", "Rice", "Bonnie", "Salt", "Sun", "You", "Rock" };
     String[] pairsB = new String[] { "Jelly", "Beans", "Clyde", "Pepper", "Moon", "Me", "Roll" };
-    String[] matches;
+    String[] matches; // Combines strings from A and B 
     bool matched;
     [SerializeField] String[] left = new String[3], right = new String[3];
 
-    [SerializeField] int[] indexA, indexB, answerIndexA, answerIndexB;
-
-    int player1Index, player2Index;
+    int player1Index, player2Index; // Tracks player UI positions
     bool click1, click2;
-
 
     void Start()
     {
         matches = new String[pairsA.Length];
         for (int i = 0; i < pairsA.Length; i++)
         {
-            matches[i] = pairsA[i] + " & " + pairsB[i];
+            matches[i] = pairsA[i] + " & " + pairsB[i]; // Combine A and B and make new String
         }
     }
 
 
     void Update()
     {
-        Display();
+        Display(); // Turn text objects on and off
         Timer();
 
         PlayerInput(1, player1Index, click1, leftPairs);
@@ -58,17 +57,15 @@ public class Pairs : MonoBehaviour
 
     public void PairGenerator()
     {
+        // Shuffle arrays and grab three pairs to display for players
         RandomizeText(pairsA, pairsB, left, right);
-        ShufflePairs(left, leftPairs);
-        ShufflePairs(right, rightPairs);
-        ResetPairs();
     }
 
 
     // Knuth shuffle algorithm courtesty of https://discussions.unity.com/t/randomize-array-in-c/443241
     void RandomizeText(String[] textA, String[] textB, String[] sideA, String[] sideB)
     {
-        for (int t = 0; t < textA.Length; t++)
+        for (int t = 0; t < 3; t++)
         {
             String tmpA = textA[t];
             String tmpB = textB[t];
@@ -78,15 +75,16 @@ public class Pairs : MonoBehaviour
             textA[t] = textA[r];
             textB[t] = textB[r];
 
-            if (t > 2) break;
-
             sideA[t] = textA[t];
             sideB[t] = textB[t];
 
-            //Debug.Log(sideA[t] + "  " + sideB[t]);
             textA[r] = tmpA;
             textB[r] = tmpB;
         }
+
+        ShufflePairs(left, leftPairs);
+        ShufflePairs(right, rightPairs);
+        ResetPairs(); // Reset pairs A and B arrays to ready for next shuffle
     }
 
 
@@ -110,16 +108,18 @@ public class Pairs : MonoBehaviour
 
     void PlayerInput(int playerNum, int playerIndex, bool click, TextMeshProUGUI[] text)
     {
+        // Choose joystick based on player number
         float dpad = Input.GetAxisRaw("D Pad" + playerNum);
 
         if (dpad != 0f && !click)
         {
+            // Use player index to cycle through text
             if (dpad > 0f)
                 playerIndex = (playerIndex < 2) ? playerIndex + 1 : 0;
             else
                 playerIndex = (playerIndex == 0) ? 2 : playerIndex - 1;
 
-            click = true;
+            click = true; // Prevent holding down dpad 
 
             if (playerNum == 1)
             {
@@ -146,6 +146,7 @@ public class Pairs : MonoBehaviour
             }
         }
 
+        // Change text color based on current selection
         for (int i = 0; i < 3; i++)
         {
             if (i == playerIndex)
@@ -164,13 +165,15 @@ public class Pairs : MonoBehaviour
         }
         else if (active)
         {
-            active = false;
-            targetTime = 2.5f;
+            active = false; // Turn off textbox
+            targetTime = 2.5f; // Reset target time
 
+            // Combine selected Strings
             String answer = left[player1Index] + " & " + right[player2Index];
 
             for (int i = 0; i < matches.Length; i++)
             {
+                // Determine whether the new String is a match
                 if (answer == matches[i]) matched = true;
             }
 
@@ -183,7 +186,7 @@ public class Pairs : MonoBehaviour
                 Debug.Log("NADA");
             }
 
-            matched = false;
+            matched = false; // Reset
         }
     }
 }
