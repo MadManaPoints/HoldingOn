@@ -4,10 +4,9 @@ public class DetectPlayer : MonoBehaviour
 {
     [SerializeField] Transform moveableObj;
 
-    // Update is called once per frame
     void Update()
     {
-        if (transform.parent == null)
+        if (transform.parent == null) // Snap back to moveable object when empty
             transform.position = new Vector3(moveableObj.position.x, transform.position.y, transform.position.z);
     }
 
@@ -15,6 +14,7 @@ public class DetectPlayer : MonoBehaviour
     {
         if (col.gameObject.tag == "Player")
         {
+            // Link script to player that enters collider
             col.gameObject.GetComponent<PlayerMovement>().moveableObj = this;
         }
     }
@@ -23,6 +23,7 @@ public class DetectPlayer : MonoBehaviour
     {
         if (col.gameObject.tag == "Player")
         {
+            // Unlink script from player
             col.gameObject.GetComponent<PlayerMovement>().moveableObj = null;
         }
     }

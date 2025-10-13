@@ -49,6 +49,8 @@ public class HandTarget : MonoBehaviour
         // Target is center of players
         center = (playerOne.transform.position + playerTwo.transform.position) / 2.0f;
         targetPosition = new Vector3(center.x, yPos, center.z);
+
+        // Raise Y position along with hands
         yPos = (p1.raiseHand && p2.raiseHand) ? 3.1f : 2.5f;
         //Debug.Log(center);
     }

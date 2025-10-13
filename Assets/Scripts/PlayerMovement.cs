@@ -74,7 +74,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetAxisRaw("Reach" + playerNum) > 0f)
         {
-            hand.weight = 1.0f;
+            hand.weight = 1.0f; // Blend animation with hand rig
         }
         else
         {
@@ -145,19 +145,23 @@ public class PlayerMovement : MonoBehaviour
     {
         if (state == PlayerState.pulling)
         {
-            moveSpeed = 0.5f;
+            moveSpeed = 0.5f; // Pull speed
+
+            // Parent moveable object collider to palyer
             if (moveableObj != null) moveableObj.transform.parent = this.transform;
             anim.SetBool("isPulling", true);
         }
         else if (state == PlayerState.running)
         {
-            moveSpeed = 3.5f;
+            moveSpeed = 3.5f; // Default speed
+
+            // Unparent moveable object
             if (moveableObj != null) moveableObj.transform.parent = null;
             anim.SetBool("isPulling", false);
         }
         else
         {
-            moveSpeed = 2.0f;
+            moveSpeed = 2.0f; // Speed while holding hands
         }
     }
 
