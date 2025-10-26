@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HandTarget : MonoBehaviour
@@ -6,11 +7,15 @@ public class HandTarget : MonoBehaviour
     public int handsIn = 0;
     float yPos = 2.5f;
     [SerializeField] GameObject playerOne, playerTwo;
+    [SerializeField] LayerMask bar, nada;
+    [SerializeField] Collider boxCol;
     PlayerMovement p1, p2;
     public Vector3 center;
     Vector3 targetPosition;
     Rigidbody rb;
     Pairs pairs;
+    List<SpringJoint> activeJoints = new List<SpringJoint>();
+
 
     void Awake()
     {
@@ -53,6 +58,47 @@ public class HandTarget : MonoBehaviour
         // Raise Y position along with hands
         yPos = (p1.raiseHand && p2.raiseHand) ? 3.1f : 2.5f;
         //Debug.Log(center);
+
+        if (handsIn == 2)
+            boxCol.excludeLayers = bar;
+        else
+            boxCol.excludeLayers = nada;
+
+        AddJoints();
+
+    }
+
+    void AddJoints()
+    {
+        if (handsIn == 2 && activeJoints.Count == 0)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                GameObject player = i == 0 ? playerOne : playerTwo;
+                SpringJoint newJoint = player.AddComponent<SpringJoint>();
+                newJoint.anchor = Vector3.up;
+                newJoint.autoConfigureConnectedAnchor = false;
+                newJoint.connectedAnchor = Vector3.up;
+                newJoint.spring = 500f;
+                newJoint.maxDistance = 0.9f;
+                newJoint.tolerance = 0f;
+                newJoint.connectedBody = i == 0 ? playerTwo.GetComponent<Rigidbody>() : playerOne.GetComponent<Rigidbody>();
+                activeJoints.Add(newJoint);
+            }
+        }
+        else if (handsIn < 2 && activeJoints.Count != 0)
+        {
+            for (int i = 0; i < activeJoints.Count; i++)
+            {
+                Destroy(activeJoints[i]);
+                activeJoints.Remove(activeJoints[i]);
+            }
+
+            foreach (SpringJoint joint in gameObject.GetComponents<SpringJoint>())
+            {
+                Destroy(joint);
+            }
+        }
     }
 
     void CheckHands(int howMany)

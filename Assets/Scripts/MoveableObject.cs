@@ -2,8 +2,9 @@ using UnityEngine;
 
 public class MoveableObject : MonoBehaviour
 {
-    [SerializeField] Transform target;
+    [SerializeField] GameObject target;
     Rigidbody rb;
+    float dist;
 
 
     void Start()
@@ -14,17 +15,20 @@ public class MoveableObject : MonoBehaviour
 
     void FixedUpdate()
     {
-        float dist = Mathf.Abs(target.position.x - this.transform.position.x);
-
         if (dist > 0.1f)
         {
-            Vector3 dir = (target.position - transform.position).normalized;
+            Vector3 dir = (target.transform.position - target.GetComponent<DetectPlayer>().offset - transform.position).normalized;
             rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, dir * 2.0f, Time.fixedDeltaTime * 5.0f);
         }
         else
         {
             rb.linearVelocity = Vector3.zero;
         }
+    }
+
+    void Update()
+    {
+        dist = Mathf.Abs(target.transform.position.x - target.GetComponent<DetectPlayer>().offset.x - this.transform.position.x);
     }
 
 }

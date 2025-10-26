@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -13,6 +14,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float airMult;
     bool canJump = true;
 
+    [Header("Pickup")]
+    public bool canTransfer;
+    bool holdingItem;
+    public Item item;
+    public Wells well;
+    [SerializeField] Transform handToHoldItem;
+
+
 
     [Header("Ground Check")]
     [SerializeField] LayerMask isGround;
@@ -22,6 +31,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Slope Handling")]
     [SerializeField] float maxSlopeAngle;
     RaycastHit slopeHit;
+    bool exitingSlope;
 
 
     [Space(15)]
@@ -47,13 +57,13 @@ public class PlayerMovement : MonoBehaviour
 
     Animator anim;
     TwoBoneIKConstraint hand;
-    public SpringJoint joint;
+    //public SpringJoint joint;
 
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        joint = GetComponent<SpringJoint>();
+        //joint = GetComponent<SpringJoint>();
         anim = GetComponentInChildren<Animator>();
         hand = GetComponentInChildren<TwoBoneIKConstraint>();
 
@@ -95,6 +105,31 @@ public class PlayerMovement : MonoBehaviour
         {
             state = PlayerState.running;
         }
+
+        if (holdingItem && Input.GetButtonDown("Action" + playerNum))
+        {
+            holdingItem = false;
+            item.transform.SetParent(null);
+
+            if (well != null)
+            {
+                item.well = well;
+                item.transform.position = new Vector3(well.transform.position.x, well.transform.position.y + 1.0f, well.transform.position.z);
+                item.TransportItem();
+                item = null;
+            }
+            else
+            {
+                item.Drop();
+            }
+        }
+        else if (item != null && Input.GetButtonDown("Action" + playerNum) && !holdingItem)
+        {
+            holdingItem = true;
+            item.boxCol.enabled = false;
+            item.transform.position = handToHoldItem.position;
+            item.transform.SetParent(handToHoldItem);
+        }
     }
 
 
@@ -119,12 +154,19 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
         if (state == PlayerState.pulling) move.z = 0f;
 
-        // Limit slope movement
-        if (OnSlope())
-            rb.linearVelocity = GetSlopeMoveDirection() * moveSpeed * 10.0f;
 
-        // Limit movement in air
-        rb.linearVelocity = (grounded) ? move : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+        if (OnSlope() && !exitingSlope)
+        {   // Limit slope movement
+            rb.linearVelocity = GetSlopeMoveDirection() * moveSpeed;
+
+            // Prevent bump effect when running upward
+            if (rb.linearVelocity.y > 0f) rb.AddForce(Vector3.down * 80.0f, ForceMode.Force);
+        }
+        else
+        {
+            // Limit movement in air
+            rb.linearVelocity = grounded ? move : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+        }
 
         // Turn off gravity on slope
         rb.useGravity = !OnSlope();
@@ -145,9 +187,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (state == PlayerState.pulling)
         {
-            moveSpeed = 0.5f; // Pull speed
+            moveSpeed = 0.3f; // Pull speed
 
-            // Parent moveable object collider to palyer
+            // Parent moveable object collider to player
             if (moveableObj != null) moveableObj.transform.parent = this.transform;
             anim.SetBool("isPulling", true);
         }
@@ -168,35 +210,37 @@ public class PlayerMovement : MonoBehaviour
 
     void HoldHands()
     {
-        if (!attached && joint.maxDistance != 10.0f)
-        {
-            // Increase joint strength to lock hands
-            joint.tolerance = 1000;
-            joint.maxDistance = 20.0f;
-        }
+        // if (!attached && joint.maxDistance != 10.0f)
+        // {
+        //     // Increase joint strength to lock hands
+        //     joint.tolerance = 1000;
+        //     joint.maxDistance = 20.0f;
+        // }
 
-        if (attached && joint.maxDistance != 0f)
-        {
-            // Decrease joint strength to unlock hands
-            joint.tolerance = 0f;
-            joint.maxDistance = 0f;
-        }
+        // if (attached && joint.maxDistance != 0f)
+        // {
+        //     // Decrease joint strength to unlock hands
+        //     joint.tolerance = 0f;
+        //     joint.maxDistance = 0f;
+        // }
     }
 
 
     void GroundCheck()
     {
         // Ground check 
-        grounded = Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), Vector3.down, 0.7f, isGround);
-        //Debug.DrawLine(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z), Color.magenta);
+        grounded = Physics.Raycast(new Vector3(this.transform.position.x, this.transform.position.y + 0.5f, this.transform.position.z), Vector3.down, 0.7f, isGround);
+        Debug.DrawLine(this.transform.position, new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z), Color.magenta);
 
         // Handle drag
-        rb.linearDamping = (grounded) ? groundDrag : 0;
+        rb.linearDamping = grounded ? groundDrag : 0;
     }
 
 
     void Jump()
     {
+        exitingSlope = true;
+
         // Always start with Y Vel at 0
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
 
@@ -207,12 +251,13 @@ public class PlayerMovement : MonoBehaviour
     void ResetJump()
     {
         canJump = true;
+        exitingSlope = false;
     }
 
 
     bool OnSlope()
     {
-        if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), Vector3.down, out slopeHit, 0.8f))
+        if (Physics.Raycast(new Vector3(this.transform.position.x, this.transform.position.y + 0.5f, this.transform.position.z), Vector3.down, out slopeHit, 0.7f, isGround))
         {
             float angle = Vector3.Angle(Vector3.up, slopeHit.normal); // Calculate slope steepness
             return angle < maxSlopeAngle && angle != 0;
@@ -230,10 +275,15 @@ public class PlayerMovement : MonoBehaviour
 
     void Animations()
     {
-        if (moveDir != Vector3.zero)
+        if (moveDir != Vector3.zero || rb.angularVelocity != Vector3.zero)
+        {
             anim.SetBool("isRunning", true);
+        }
         else
+        {
             anim.SetBool("isRunning", false);
+        }
+
 
         bool hasJumped = !grounded;
         anim.SetBool("isJumping", hasJumped);
