@@ -1,0 +1,39 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class CharacterSelection : MonoBehaviour
+{
+    [SerializeField] int playerNum;
+    [SerializeField] GameObject[] playerChoices;
+    int index;
+    bool click;
+    void Start()
+    {
+
+    }
+
+    void Update()
+    {
+        float dpad = Input.GetAxisRaw("Selection" + playerNum);
+
+        if(dpad != 0f && !click)
+        {
+            index = index == 0 ? 1 : 0;
+
+            for(int i = 0; i < playerChoices.Length; i++)
+            {
+                if(i == index && !playerChoices[i].activeInHierarchy) playerChoices[i].SetActive(true);
+                else if(i != index && playerChoices[i].activeInHierarchy) playerChoices[i].SetActive(false);
+            }
+
+            if(playerNum == 1) GameManager.Instance.p1Choice = index;
+            if(playerNum == 2) GameManager.Instance.p2Choice = index;
+
+            click = true;
+        }
+
+        if(dpad == 0f && click) click = false;
+
+        if(Input.GetKeyDown(KeyCode.Space)) SceneManager.LoadScene("Main");
+    }
+}
