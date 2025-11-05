@@ -1,4 +1,5 @@
 using System;
+using System.Xml;
 using NUnit.Framework;
 using UnityEditor.Search;
 using UnityEngine;
@@ -16,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Pickup")]
     public bool canTransfer;
-    bool holdingItem;
+    public bool holdingItem;
     public Item item;
     public Wells well;
     [SerializeField] Transform handToHoldItem;
@@ -58,6 +59,7 @@ public class PlayerMovement : MonoBehaviour
     Animator anim;
     TwoBoneIKConstraint hand;
     //public SpringJoint joint;
+    RaycastHit floorHit;
 
 
     void Start()
@@ -72,7 +74,7 @@ public class PlayerMovement : MonoBehaviour
 
     void MyInput()
     {
-        moveDir = new Vector3(Input.GetAxis("Horizontal" + playerNum), 0f, -Input.GetAxis("Vertical" + playerNum));
+        moveDir = new Vector3(Input.GetAxis("Horizontal"), 0f, -Input.GetAxis("Vertical"));
 
         // Listen for Jump input
         if (Input.GetButtonDown("Jump" + playerNum) && canJump && grounded)
@@ -95,9 +97,9 @@ public class PlayerMovement : MonoBehaviour
         {
             state = PlayerState.holding;
             float raise = Input.GetAxisRaw("Raise" + playerNum);
-            raiseHand = (raise > 0f) ? true : false;
+            raiseHand = raise > 0f ? true : false;
         }
-        else if (Input.GetButton("Action" + playerNum) && moveableObj != null)
+        else if ((Input.GetButton("Action" + playerNum) || Input.GetMouseButton(1)) && moveableObj != null)
         {
             state = PlayerState.pulling;
         }
@@ -106,27 +108,45 @@ public class PlayerMovement : MonoBehaviour
             state = PlayerState.running;
         }
 
-        if (holdingItem && Input.GetButtonDown("Action" + playerNum))
+        // Item management 
+        if (holdingItem && (Input.GetButtonDown("Action" + playerNum) || Input.GetMouseButtonDown(0)))
         {
-            holdingItem = false;
-            item.transform.SetParent(null);
+            // Allow only one transport at a time
+            if (well != null && (well.inUse || well.connectedWell.inUse)) return;
+            if (well != null && well.collectedItem != null) return;
 
+            holdingItem = false;
+            item.transform.SetParent(null); // Unparent from player 
+
+            // If near well, place item inside 
             if (well != null)
             {
-                item.well = well;
+                well.inUse = true;
+                item.well = well; // Pass reference of well script to item script
                 item.transform.position = new Vector3(well.transform.position.x, well.transform.position.y + 1.0f, well.transform.position.z);
-                item.TransportItem();
-                item = null;
+                item.TransportItem(); // Change item state 
+                this.item = null; // Remove item reference from player 
             }
             else
             {
+                // Drop item if not near well 
                 item.Drop();
             }
         }
-        else if (item != null && Input.GetButtonDown("Action" + playerNum) && !holdingItem)
+        else if (item != null && (Input.GetButtonDown("Action" + playerNum) || Input.GetMouseButtonDown(0)) && !holdingItem)
         {
+            // Remove collected item reference from well 
+            if (well != null && well.collectedItem != null)
+            {
+                well.collectedItem = null;
+                well.inUse = false;
+                well.connectedWell.inUse = false;
+            }
+
             holdingItem = true;
-            item.boxCol.enabled = false;
+            item.boxCol.enabled = false; // Make item unable to collide with objects 
+
+            // Place item in player hand
             item.transform.position = handToHoldItem.position;
             item.transform.SetParent(handToHoldItem);
         }
@@ -141,7 +161,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        HoldHands();
         GroundCheck();
         MyInput();
         StateHandler();
@@ -172,7 +191,7 @@ public class PlayerMovement : MonoBehaviour
         rb.useGravity = !OnSlope();
 
         // Handle rotation
-        if (moveDir != Vector3.zero && !Input.GetButton("Action" + playerNum))
+        if (moveDir != Vector3.zero && !Input.GetButton("Action" + playerNum) && state != PlayerState.pulling)
         {
             float angleDiff = Vector3.SignedAngle(transform.forward, moveDir, Vector3.up);
             rb.angularVelocity = new Vector3(rb.angularVelocity.x, angleDiff * 0.2f, rb.angularVelocity.z);
@@ -207,30 +226,14 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
-    void HoldHands()
-    {
-        // if (!attached && joint.maxDistance != 10.0f)
-        // {
-        //     // Increase joint strength to lock hands
-        //     joint.tolerance = 1000;
-        //     joint.maxDistance = 20.0f;
-        // }
-
-        // if (attached && joint.maxDistance != 0f)
-        // {
-        //     // Decrease joint strength to unlock hands
-        //     joint.tolerance = 0f;
-        //     joint.maxDistance = 0f;
-        // }
-    }
-
-
     void GroundCheck()
     {
         // Ground check 
-        grounded = Physics.Raycast(new Vector3(this.transform.position.x, this.transform.position.y + 0.5f, this.transform.position.z), Vector3.down, 0.7f, isGround);
-        Debug.DrawLine(this.transform.position, new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z), Color.magenta);
+        // Boxcast for coyote time 
+        grounded = Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), transform.localScale * 0.25f, Vector3.down, out floorHit, transform.rotation, 0.7f, isGround);
+
+        //grounded = Physics.Raycast(new Vector3(this.transform.position.x, this.transform.position.y + 0.5f, this.transform.position.z), Vector3.down, 0.7f, isGround);
+        //Debug.DrawLine(this.transform.position, new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z), Color.magenta);
 
         // Handle drag
         rb.linearDamping = grounded ? groundDrag : 0;
@@ -270,6 +273,13 @@ public class PlayerMovement : MonoBehaviour
     Vector3 GetSlopeMoveDirection()
     {
         return Vector3.ProjectOnPlane(moveDir, slopeHit.normal).normalized;
+    }
+
+    public void DestroyItem()
+    {
+        if (item == null) return;
+        holdingItem = false;
+        Destroy(item.gameObject);
     }
 
 
