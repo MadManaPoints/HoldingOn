@@ -74,7 +74,7 @@ public class PlayerMovement : MonoBehaviour
 
     void MyInput()
     {
-        moveDir = new Vector3(Input.GetAxis("Horizontal"), 0f, -Input.GetAxis("Vertical"));
+        moveDir = new Vector3(Input.GetAxis("Horizontal" + playerNum), 0f, -Input.GetAxis("Vertical" + playerNum));
 
         // Listen for Jump input
         if (Input.GetButtonDown("Jump" + playerNum) && canJump && grounded)

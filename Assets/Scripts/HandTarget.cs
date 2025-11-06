@@ -25,8 +25,6 @@ public class HandTarget : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        p1 = playerOne.GetComponent<PlayerMovement>();
-        p2 = playerTwo.GetComponent<PlayerMovement>();
         pairs = GameObject.Find("Canvas").GetComponent<Pairs>();
     }
 
@@ -45,6 +43,8 @@ public class HandTarget : MonoBehaviour
 
     void Update()
     {
+        CheckForPlayers();
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             pairs.PairGenerator();
@@ -66,6 +66,23 @@ public class HandTarget : MonoBehaviour
 
         AddJoints();
 
+    }
+
+    void CheckForPlayers()
+    {
+        if(playerOne == null)
+        {
+            playerOne = GameObject.Find("Player 1");
+            p1 = playerOne.GetComponent<PlayerMovement>();
+        }
+
+        if(playerTwo == null)
+        {
+            playerTwo = GameObject.Find("Player 2");
+            p2 = playerTwo.GetComponent<PlayerMovement>();
+        }
+
+        if(playerOne == null || playerTwo == null) return;
     }
 
     void AddJoints()
