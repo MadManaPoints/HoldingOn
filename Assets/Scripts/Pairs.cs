@@ -20,6 +20,7 @@ public class Pairs : MonoBehaviour
 
     int player1Index, player2Index; // Tracks player UI positions
     bool click1, click2;
+    LevelTimer time;
 
     void Start()
     {
@@ -28,6 +29,8 @@ public class Pairs : MonoBehaviour
         {
             matches[i] = pairsA[i] + " & " + pairsB[i]; // Combine A and B and make new String
         }
+
+        time = GetComponentInChildren<LevelTimer>();
     }
 
 
@@ -183,6 +186,7 @@ public class Pairs : MonoBehaviour
             }
             else
             {
+                StartCoroutine(time.SubtractTime());
                 Debug.Log("NADA");
             }
 

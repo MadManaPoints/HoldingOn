@@ -19,12 +19,14 @@ public class CamFollow : MonoBehaviour
     void Update()
     {
         // Check for players
-        if(playerOne == null) playerOne = GameObject.Find("Player 1").GetComponent<Transform>();
-        if(playerTwo == null) playerTwo = GameObject.Find("Player 2").GetComponent<Transform>();
+        if (playerOne == null) playerOne = GameObject.Find("Player 1").GetComponent<Transform>();
+        if (playerTwo == null) playerTwo = GameObject.Find("Player 2").GetComponent<Transform>();
 
         // Get distance between players and clamp it
         float dist = Vector3.Distance(playerOne.transform.position, playerTwo.transform.position);
         float clampedDist = Mathf.Clamp(dist, 1.0f, 12.0f);
+
+        GameManager.Instance.tooFar = clampedDist > 10.0f;
 
         // Move camera based on player distance 
         float rot = Map(clampedDist, 1.2f, 12.0f, 10.0f, 70.0f);

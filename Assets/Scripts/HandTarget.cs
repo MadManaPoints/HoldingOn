@@ -66,23 +66,24 @@ public class HandTarget : MonoBehaviour
 
         AddJoints();
 
+        GameManager.Instance.playersTogether = handsIn == 2;
     }
 
     void CheckForPlayers()
     {
-        if(playerOne == null)
+        if (playerOne == null)
         {
             playerOne = GameObject.Find("Player 1");
             p1 = playerOne.GetComponent<PlayerMovement>();
         }
 
-        if(playerTwo == null)
+        if (playerTwo == null)
         {
             playerTwo = GameObject.Find("Player 2");
             p2 = playerTwo.GetComponent<PlayerMovement>();
         }
 
-        if(playerOne == null || playerTwo == null) return;
+        if (playerOne == null || playerTwo == null) return;
     }
 
     void AddJoints()
