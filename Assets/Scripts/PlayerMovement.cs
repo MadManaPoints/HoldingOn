@@ -60,7 +60,11 @@ public class PlayerMovement : MonoBehaviour
     TwoBoneIKConstraint hand;
     //public SpringJoint joint;
     RaycastHit floorHit;
+    bool onIce;
+    Vector3 move;
 
+    public Vector3 actualMove;
+    PlayerMovement partner;
 
     void Start()
     {
@@ -161,18 +165,26 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (partner == null) AddPartner();
         GroundCheck();
         MyInput();
         StateHandler();
         Animations();
     }
 
-
     void Movement()
     {
-        Vector3 move = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
-        if (state == PlayerState.pulling) move.z = 0f;
+        // Update move based on player input
+        move = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
 
+        // Add move to Actual as long as player's on regular ground
+        if (!onIce) actualMove = move;
+
+        // Match move for player on ice to player on regular ground while hand holding
+        if (attached && onIce) actualMove = partner.actualMove;
+
+        // Prevent forward/back movement while pulling
+        if (state == PlayerState.pulling) move.z = 0f;
 
         if (OnSlope() && !exitingSlope)
         {   // Limit slope movement
@@ -184,7 +196,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // Limit movement in air
-            rb.linearVelocity = grounded ? move : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+            rb.linearVelocity = grounded ? actualMove : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
         }
 
         // Turn off gravity on slope
@@ -229,11 +241,13 @@ public class PlayerMovement : MonoBehaviour
     void GroundCheck()
     {
         // Ground check 
-        // Boxcast for coyote time 
         grounded = Physics.BoxCast(new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), transform.localScale * 0.25f, Vector3.down, out floorHit, transform.rotation, 0.7f, isGround);
 
         //grounded = Physics.Raycast(new Vector3(this.transform.position.x, this.transform.position.y + 0.5f, this.transform.position.z), Vector3.down, 0.7f, isGround);
         //Debug.DrawLine(this.transform.position, new Vector3(transform.position.x, transform.position.y - 0.2f, transform.position.z), Color.magenta);
+
+        // Ice check
+        onIce = grounded && floorHit.transform.tag == "Ice";
 
         // Handle drag
         rb.linearDamping = grounded ? groundDrag : 0;
@@ -306,5 +320,11 @@ public class PlayerMovement : MonoBehaviour
         {
             anim.SetBool("isHolding", false);
         }
+    }
+
+    void AddPartner()
+    {
+        partner = isPlayerTwo ? GameObject.Find("Player 1").GetComponent<PlayerMovement>() :
+                                GameObject.Find("Player 2").GetComponent<PlayerMovement>();
     }
 }

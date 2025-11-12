@@ -47,8 +47,8 @@ public class HandTarget : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            pairs.PairGenerator();
-            pairs.active = true;
+            //pairs.PairGenerator();
+            //pairs.active = true;
         }
 
         // Target is center of players

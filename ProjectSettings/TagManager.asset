@@ -8,6 +8,7 @@ TagManager:
   - Hand
   - Grab Area
   - Game Manager
+  - Ice
   layers:
   - Default
   - TransparentFX
