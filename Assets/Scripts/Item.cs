@@ -6,10 +6,11 @@ using UnityEngine;
 public class Item : MonoBehaviour
 {
     public Collider boxCol;
-    Vector3 startPos, startRot;
+    protected Vector3 startPos, startRot;
     public Wells well;
     public ItemState itemState;
     public String key;
+    public Vector3 offset;
     public enum ItemState
     {
         Transporting,
@@ -17,16 +18,17 @@ public class Item : MonoBehaviour
         None,
     }
 
-    void Start()
+    protected virtual void Start()
     {
         startPos = transform.position;
         startRot = transform.localEulerAngles;
     }
 
-    void Update()
+    protected virtual void Update()
     {
         if (itemState == ItemState.Transporting)
         {
+            Debug.Log("YERRR");
             // Move down first well 
             if (transform.position.y > 0f && transform.position.x == well.transform.position.x)
             {

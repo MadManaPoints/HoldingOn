@@ -151,7 +151,7 @@ public class PlayerMovement : MonoBehaviour
             item.boxCol.enabled = false; // Make item unable to collide with objects 
 
             // Place item in player hand
-            item.transform.position = handToHoldItem.position;
+            item.transform.position = handToHoldItem.position + item.offset;
             item.transform.SetParent(handToHoldItem);
         }
     }
@@ -196,7 +196,13 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // Limit movement in air
-            rb.linearVelocity = grounded ? actualMove : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+            if (!onIce) rb.linearVelocity = grounded ? actualMove : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+
+            // Use force when sliding on ice
+            else rb.AddForce(move);
+
+            // Clamp magnitude when sliding on ice
+            if (onIce && rb.linearVelocity.magnitude > 5.0f) rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, 5.0f);
         }
 
         // Turn off gravity on slope
@@ -250,7 +256,7 @@ public class PlayerMovement : MonoBehaviour
         onIce = grounded && floorHit.transform.tag == "Ice";
 
         // Handle drag
-        rb.linearDamping = grounded ? groundDrag : 0;
+        rb.linearDamping = grounded && !onIce ? groundDrag : 0;
     }
 
 

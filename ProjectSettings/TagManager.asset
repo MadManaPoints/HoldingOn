@@ -9,6 +9,7 @@ TagManager:
   - Grab Area
   - Game Manager
   - Ice
+  - Marshmallow
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - isGround
   - isReachZone
   - 
-  - 
+  - isBucket
   - 
   - 
   - 
