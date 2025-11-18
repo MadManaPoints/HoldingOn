@@ -20,6 +20,7 @@ public class PlayerMovement : MonoBehaviour
     public bool holdingItem;
     public Item item;
     public Wells well;
+    public Garden garden;
     [SerializeField] Transform handToHoldItem;
 
 
@@ -133,18 +134,26 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                // Drop item if not near well 
-                item.Drop();
+                // Drop item if not near well or garden
+                if (garden == null)
+                    item.Drop();
             }
         }
-        else if (item != null && (Input.GetButtonDown("Action" + playerNum) || Input.GetMouseButtonDown(0)) && !holdingItem)
+        else if ((item != null && (Input.GetButtonDown("Action" + playerNum) || Input.GetMouseButtonDown(0)) && !holdingItem) ||
+                ((Input.GetButtonDown("Action" + playerNum) || Input.GetMouseButtonDown(0)) && garden != null && item == null))
         {
             // Remove collected item reference from well 
             if (well != null && well.collectedItem != null)
             {
+                item.well = null;
                 well.collectedItem = null;
                 well.inUse = false;
                 well.connectedWell.inUse = false;
+            }
+            else if (garden != null)
+            {
+                if (garden.carrotList.Count == 0 || !garden.readyToHarvest) return;
+                garden.GiveItem(this);
             }
 
             holdingItem = true;

@@ -10,6 +10,9 @@ TagManager:
   - Game Manager
   - Ice
   - Marshmallow
+  - Bucket
+  - Carrot
+  - Bunny
   layers:
   - Default
   - TransparentFX

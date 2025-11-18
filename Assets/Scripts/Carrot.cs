@@ -4,7 +4,8 @@ public class Carrot : Item
 {
     protected override void Start()
     {
-        base.Start();
+        startPos.y = 1.7f;
+        startRot = transform.localEulerAngles;
     }
 
     protected override void Update()
