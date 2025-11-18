@@ -84,9 +84,9 @@ public class PlayerMovement : MonoBehaviour
         // Listen for Jump input
         if (Input.GetButtonDown("Jump" + playerNum) && canJump && grounded)
         {
-            canJump = false;
-            Jump();
-            Invoke(nameof(ResetJump), jumpCooldown); // Wait before reseting Jump
+            //canJump = false;
+            //Jump();
+            //Invoke(nameof(ResetJump), jumpCooldown); // Wait before reseting Jump
         }
 
         if (Input.GetAxisRaw("Reach" + playerNum) > 0f)
