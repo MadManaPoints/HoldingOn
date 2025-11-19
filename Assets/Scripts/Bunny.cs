@@ -12,7 +12,7 @@ public class Bunny : MonoBehaviour
     {
         startPos = transform.position;
         endPos = startPos;
-        endPos.x = -6.26f;
+        endPos.x = 6.3f;
     }
 
     void Update()

@@ -79,7 +79,7 @@ public class PlayerMovement : MonoBehaviour
 
     void MyInput()
     {
-        moveDir = new Vector3(Input.GetAxis("Horizontal"), 0f, -Input.GetAxis("Vertical"));
+        moveDir = new Vector3(Input.GetAxis("Horizontal" + playerNum), 0f, -Input.GetAxis("Vertical" + playerNum));
 
         // Listen for Jump input
         if (Input.GetButtonDown("Jump" + playerNum) && canJump && grounded)
@@ -152,6 +152,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if (garden != null)
             {
+                // Pick carrots if they're ready to harvest
                 if (garden.carrotList.Count == 0 || !garden.readyToHarvest) return;
                 garden.GiveItem(this);
             }
@@ -249,7 +250,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            moveSpeed = 2.0f; // Speed while holding hands
+            moveSpeed = 2.7f; // Speed while holding hands
         }
     }
 

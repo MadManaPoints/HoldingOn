@@ -9,7 +9,7 @@ public class LevelTimer : MonoBehaviour
     TextMeshProUGUI score;
     Animator anim;
     Animator controller;
-    int timeLeft = 100;
+    int timeLeft = 200;
     float second = 1.0f;
     float multiplier = 1.0f;
     ColorState state = ColorState.Default;
@@ -79,7 +79,7 @@ public class LevelTimer : MonoBehaviour
         // Subtract seven points from timer
         for (int i = 0; i < 7; i++)
         {
-            timeLeft--;
+            if (timeLeft > 0) timeLeft--;
             // Wait for 0.1 seconds before the next iteration
             yield return new WaitForSeconds(.1f);
         }

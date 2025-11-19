@@ -1,4 +1,5 @@
 using Unity.VisualScripting;
+using UnityEditor.MPE;
 using UnityEngine;
 
 public class CamFollow : MonoBehaviour
@@ -8,6 +9,9 @@ public class CamFollow : MonoBehaviour
     Vector3 velocity = Vector3.zero;
     [SerializeField] Vector3 offset;
     Vector3 targetPosition;
+    float minDist = 1.0f, maxDist = 14.0f;
+    bool far;
+    float camSpeed = 0.3f;
 
 
     void Start()
@@ -24,19 +28,28 @@ public class CamFollow : MonoBehaviour
 
         // Get distance between players and clamp it
         float dist = Vector3.Distance(playerOne.transform.position, playerTwo.transform.position);
-        float clampedDist = Mathf.Clamp(dist, 1.0f, 12.0f);
+        float clampedDist = Mathf.Clamp(dist, minDist, maxDist);
 
-        GameManager.Instance.tooFar = clampedDist > 10.0f;
+        //far = clampedDist > 7.0f;
+        float distFromPlayer = !playerOne.gameObject.GetComponent<PlayerMovement>().attached ? 3.2f : 2.5f;
+        //camSpeed = !far ? 0.4f : 0.8f;
+
+        GameManager.Instance.tooFar = clampedDist > 12.0f;
 
         // Move camera based on player distance 
-        float rot = Map(clampedDist, 1.2f, 12.0f, 10.0f, 70.0f);
-        float offsetY = Map(clampedDist, 1.0f, 12.0f, 2.0f, 6.5f) * 1.5f;
-        float closeOffsetZ = Map(clampedDist, 1.0f, 12.0f, -2.0f, -6.0f);
-        float farOffsetZ = Map(clampedDist, 1.0f, 12.0f, -4.0f, -3.0f);
-        float offsetZ = (dist >= 5.0f) ? farOffsetZ : closeOffsetZ;
+        float rot = Map(clampedDist, minDist + 0.2f, maxDist, 10.0f, 65.0f);
+        float offsetY = Map(clampedDist, minDist, 10.0f, 3.0f, 9.0f);
+
+        float closeOffsetZ = Map(clampedDist, minDist, maxDist, -2.0f, -6.0f);
+
+        float farOffsetZ = Map(clampedDist, minDist, maxDist, -4.0f, -3.0f);
+        float offsetZ = playerOne.transform.position.z < playerTwo.transform.position.z ? playerOne.transform.position.z - distFromPlayer : playerTwo.transform.position.z - distFromPlayer;
+
+        //if (playerOne.transform.position.z - playerTwo.transform.position.z < 7.0f) offsetZ = (dist >= 5.0f) ? farOffsetZ : closeOffsetZ;
+        //else offsetZ = playerOne.transform.position.z < playerTwo.transform.position.z ? playerOne.transform.position.z - 2.0f : playerTwo.transform.position.z - 2.0f;
         //Debug.Log("OffsetY: " + offsetY + "      ||     " + "OffsetZ: " + offsetZ);
 
-        targetPosition = new Vector3(0f, offsetY, target.center.z + offsetZ);
+        targetPosition = new Vector3(0f, offsetY, offsetZ);
 
         // Look toward center area
         transform.localEulerAngles = new Vector3(rot, transform.localEulerAngles.y, transform.localEulerAngles.z);
@@ -46,7 +59,7 @@ public class CamFollow : MonoBehaviour
     void LateUpdate()
     {
         // Ease into position
-        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, 0.3f);
+        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, camSpeed);
     }
 
 

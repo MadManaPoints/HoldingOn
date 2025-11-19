@@ -30,14 +30,14 @@ public class HandTarget : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (Vector3.Distance(targetPosition, transform.position) > 0.2f)
+        if (Vector3.Distance(targetPosition, transform.position) < 0.1f)
         {
-            Vector3 dir = (targetPosition - transform.position).normalized;
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, dir * 3.0f, Time.fixedDeltaTime * 5.0f);
+            rb.linearVelocity = Vector3.zero; //Vector3.Lerp(rb.linearVelocity, Vector3.zero, Time.fixedDeltaTime * 5.0f);
         }
         else
         {
-            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, Time.fixedDeltaTime * 5.0f);
+            Vector3 dir = (targetPosition - transform.position).normalized;
+            rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, dir * 3.0f, Time.fixedDeltaTime * 5.0f);
         }
     }
 
@@ -47,8 +47,8 @@ public class HandTarget : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            //pairs.PairGenerator();
-            //pairs.active = true;
+            pairs.PairGenerator();
+            pairs.active = true;
         }
 
         // Target is center of players

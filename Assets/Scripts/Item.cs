@@ -28,7 +28,6 @@ public class Item : MonoBehaviour
     {
         if (itemState == ItemState.Transporting)
         {
-            Debug.Log("YERRR");
             // Move down first well 
             if (transform.position.y > 0f && transform.position.x == well.transform.position.x)
             {
