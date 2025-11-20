@@ -8,7 +8,7 @@ public class Pairs : MonoBehaviour
 {
     [SerializeField] GameObject display; // All text objects
     public bool active; // true when testing
-    float targetTime = 2.5f; // Timer to close textbox
+    float targetTime = 5.0f; // Timer to close textbox
     [SerializeField] TextMeshProUGUI[] leftPairs, rightPairs; // Text to display for each player
 
     // Arrays of text for each player 
@@ -21,6 +21,9 @@ public class Pairs : MonoBehaviour
     int player1Index, player2Index; // Tracks player UI positions
     bool click1, click2;
     LevelTimer time;
+    [SerializeField] Animator anim;
+    public bool tutorialStart;
+    bool tutorialEnd;
 
     void Start()
     {
@@ -31,11 +34,13 @@ public class Pairs : MonoBehaviour
         }
 
         time = GetComponentInChildren<LevelTimer>();
+        //anim = GetComponentInChildren<Animator>();
     }
 
 
     void Update()
     {
+        if (!tutorialEnd) PlayTutorial();
         Display(); // Turn text objects on and off
         Timer();
 
@@ -162,6 +167,8 @@ public class Pairs : MonoBehaviour
 
     void Timer()
     {
+        if (GameManager.Instance.tutorial) return;
+
         if (targetTime > 0 && active)
         {
             targetTime -= Time.deltaTime;
@@ -191,6 +198,24 @@ public class Pairs : MonoBehaviour
             }
 
             matched = false; // Reset
+        }
+    }
+
+    void PlayTutorial()
+    {
+        if (!GameManager.Instance.tutorial || !transform.GetChild(transform.childCount - 1).gameObject.activeInHierarchy) return;
+
+        if (!tutorialStart) tutorialStart = true;
+        anim.SetBool("Tutorial", true);
+
+        if (active && (Input.GetButtonDown("Action1") || Input.GetButtonDown("Action2") || Input.GetKeyDown(KeyCode.U)))
+        {
+            tutorialStart = false;
+            anim.SetBool("Tutorial", false);
+            GameManager.Instance.tutorial = false;
+            tutorialEnd = true;
+            anim = null;
+            Destroy(transform.GetChild(transform.childCount - 1).gameObject);
         }
     }
 }

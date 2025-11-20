@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class HandTarget : MonoBehaviour
@@ -14,6 +15,7 @@ public class HandTarget : MonoBehaviour
     Vector3 targetPosition;
     Rigidbody rb;
     Pairs pairs;
+    public bool keepHeld;
     List<SpringJoint> activeJoints = new List<SpringJoint>();
 
 
@@ -26,6 +28,9 @@ public class HandTarget : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         pairs = GameObject.Find("Canvas").GetComponent<Pairs>();
+
+        handsIn = GameManager.Instance.tutorial ? 2 : 0;
+        keepHeld = GameManager.Instance.tutorial;
     }
 
     void FixedUpdate()
@@ -44,11 +49,10 @@ public class HandTarget : MonoBehaviour
     void Update()
     {
         CheckForPlayers();
-
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            pairs.PairGenerator();
-            pairs.active = true;
+            //pairs.PairGenerator();
+            //pairs.active = true;
         }
 
         // Target is center of players
@@ -121,6 +125,8 @@ public class HandTarget : MonoBehaviour
 
     void CheckHands(int howMany)
     {
+        if (GameManager.Instance.tutorial && keepHeld) return;
+
         if (howMany == 2)
         {
             p1.attached = true;

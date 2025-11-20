@@ -1,7 +1,4 @@
 using System;
-using System.Xml;
-using NUnit.Framework;
-using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -66,6 +63,7 @@ public class PlayerMovement : MonoBehaviour
 
     public Vector3 actualMove;
     PlayerMovement partner;
+    public bool playerControl = true;
 
     void Start()
     {
@@ -79,7 +77,7 @@ public class PlayerMovement : MonoBehaviour
 
     void MyInput()
     {
-        moveDir = new Vector3(Input.GetAxis("Horizontal" + playerNum), 0f, -Input.GetAxis("Vertical" + playerNum));
+        moveDir = new Vector3(Input.GetAxis("Horizontal"), 0f, -Input.GetAxis("Vertical"));
 
         // Listen for Jump input
         if (Input.GetButtonDown("Jump" + playerNum) && canJump && grounded)
@@ -89,7 +87,7 @@ public class PlayerMovement : MonoBehaviour
             //Invoke(nameof(ResetJump), jumpCooldown); // Wait before reseting Jump
         }
 
-        if (Input.GetAxisRaw("Reach" + playerNum) > 0f)
+        if (Input.GetAxisRaw("Reach" + playerNum) > 0f || GameManager.Instance.bindPlayers)
         {
             hand.weight = 1.0f; // Blend animation with hand rig
         }
@@ -176,14 +174,20 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         if (partner == null) AddPartner();
+        if (!GameManager.Instance.tutorial && !playerControl) playerControl = true;
         GroundCheck();
-        MyInput();
+        if (playerControl) MyInput();
         StateHandler();
         Animations();
     }
 
     void Movement()
     {
+        if (!playerControl)
+        {
+            if (rb.linearVelocity != Vector3.zero) rb.linearVelocity = Vector3.zero;
+            return;
+        }
         // Update move based on player input
         move = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
 
@@ -212,7 +216,7 @@ public class PlayerMovement : MonoBehaviour
             else rb.AddForce(move);
 
             // Clamp magnitude when sliding on ice
-            if (onIce && rb.linearVelocity.magnitude > 5.0f) rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, 5.0f);
+            if (onIce && rb.linearVelocity.magnitude > 8.0f) rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, 5.0f);
         }
 
         // Turn off gravity on slope
@@ -315,7 +319,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Animations()
     {
-        if (moveDir != Vector3.zero || rb.angularVelocity != Vector3.zero)
+        if ((moveDir != Vector3.zero || rb.angularVelocity != Vector3.zero) && playerControl)
         {
             anim.SetBool("isRunning", true);
         }

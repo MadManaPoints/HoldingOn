@@ -30,9 +30,7 @@ public class CamFollow : MonoBehaviour
         float dist = Vector3.Distance(playerOne.transform.position, playerTwo.transform.position);
         float clampedDist = Mathf.Clamp(dist, minDist, maxDist);
 
-        //far = clampedDist > 7.0f;
         float distFromPlayer = !playerOne.gameObject.GetComponent<PlayerMovement>().attached ? 3.2f : 2.5f;
-        //camSpeed = !far ? 0.4f : 0.8f;
 
         GameManager.Instance.tooFar = clampedDist > 12.0f;
 
@@ -40,14 +38,11 @@ public class CamFollow : MonoBehaviour
         float rot = Map(clampedDist, minDist + 0.2f, maxDist, 10.0f, 65.0f);
         float offsetY = Map(clampedDist, minDist, 10.0f, 3.0f, 9.0f);
 
-        float closeOffsetZ = Map(clampedDist, minDist, maxDist, -2.0f, -6.0f);
+        //  MIGHT NOT NEED THIS ANYMORE
+        //float closeOffsetZ = Map(clampedDist, minDist, maxDist, -2.0f, -6.0f);
+        //float farOffsetZ = Map(clampedDist, minDist, maxDist, -4.0f, -3.0f);
 
-        float farOffsetZ = Map(clampedDist, minDist, maxDist, -4.0f, -3.0f);
         float offsetZ = playerOne.transform.position.z < playerTwo.transform.position.z ? playerOne.transform.position.z - distFromPlayer : playerTwo.transform.position.z - distFromPlayer;
-
-        //if (playerOne.transform.position.z - playerTwo.transform.position.z < 7.0f) offsetZ = (dist >= 5.0f) ? farOffsetZ : closeOffsetZ;
-        //else offsetZ = playerOne.transform.position.z < playerTwo.transform.position.z ? playerOne.transform.position.z - 2.0f : playerTwo.transform.position.z - 2.0f;
-        //Debug.Log("OffsetY: " + offsetY + "      ||     " + "OffsetZ: " + offsetZ);
 
         targetPosition = new Vector3(0f, offsetY, offsetZ);
 
