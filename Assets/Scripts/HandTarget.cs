@@ -29,7 +29,7 @@ public class HandTarget : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         pairs = GameObject.Find("Canvas").GetComponent<Pairs>();
 
-        handsIn = GameManager.Instance.tutorial ? 2 : 0;
+        //handsIn = GameManager.Instance.tutorial ? 2 : 0;
         keepHeld = GameManager.Instance.tutorial;
     }
 
@@ -49,11 +49,6 @@ public class HandTarget : MonoBehaviour
     void Update()
     {
         CheckForPlayers();
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            //pairs.PairGenerator();
-            //pairs.active = true;
-        }
 
         // Target is center of players
         center = (playerOne.transform.position + playerTwo.transform.position) / 2.0f;

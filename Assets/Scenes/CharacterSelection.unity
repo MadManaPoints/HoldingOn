@@ -563,6 +563,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   p1Choice: 0
   p2Choice: 1
+  playersTogether: 0
+  tooFar: 0
+  tutorial: 0
+  bindPlayers: 0
 --- !u!4 &103366219
 Transform:
   m_ObjectHideFlags: 0

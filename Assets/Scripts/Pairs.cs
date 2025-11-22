@@ -211,6 +211,7 @@ public class Pairs : MonoBehaviour
         if (active && (Input.GetButtonDown("Action1") || Input.GetButtonDown("Action2") || Input.GetKeyDown(KeyCode.U)))
         {
             tutorialStart = false;
+            GameObject.Find("Time").GetComponent<LevelTimer>().tutorial = false;
             anim.SetBool("Tutorial", false);
             GameManager.Instance.tutorial = false;
             tutorialEnd = true;

@@ -13,6 +13,7 @@ public class LevelTimer : MonoBehaviour
     float second = 1.0f;
     float multiplier = 1.0f;
     ColorState state = ColorState.Default;
+    public bool tutorial;
     enum ColorState
     {
         Default,
@@ -56,6 +57,8 @@ public class LevelTimer : MonoBehaviour
             controller.speed = 1.0f;
             state = ColorState.Default;
         }
+
+        if(tutorial) return;
 
         if (second >= 0f)
         {

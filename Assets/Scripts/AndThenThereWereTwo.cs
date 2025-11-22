@@ -7,15 +7,13 @@ public class AndThenThereWereTwo : MonoBehaviour
 
     void Start()
     {
-        if(GameManager.Instance.p1Choice == 0)
-            Destroy(p1[0]);
-        else
-            Destroy(p1[1]);
-
-        if(GameManager.Instance.p2Choice == 0)
-            Destroy(p2[0]);
-        else
-            Destroy(p2[1]);
+        Debug.Log(GameManager.Instance.p1Choice);
+        for(int i = 0; i < 2; i++)
+        {   if(i != GameManager.Instance.p1Choice)
+            Destroy(p1[i]);
+            if(i != GameManager.Instance.p2Choice)
+            Destroy(p2[i]);
+        }
 
         Destroy(this.gameObject);
     }

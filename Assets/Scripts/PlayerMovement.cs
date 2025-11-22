@@ -186,6 +186,7 @@ public class PlayerMovement : MonoBehaviour
         if (!playerControl)
         {
             if (rb.linearVelocity != Vector3.zero) rb.linearVelocity = Vector3.zero;
+            if (rb.angularVelocity != Vector3.zero) rb.angularVelocity = Vector3.zero;
             return;
         }
         // Update move based on player input

@@ -6,11 +6,12 @@ public class SplitThePole : MonoBehaviour
     [SerializeField] Pairs pairs;
     bool split;
     bool tutorial;
+    [SerializeField] bool firstPole;
     [SerializeField] GameObject tutorialObj;
 
     void Start()
     {
-        tutorial = GameManager.Instance.tutorial;
+        tutorial = GameManager.Instance.tutorial && firstPole;
     }
 
     void Update()
@@ -34,6 +35,7 @@ public class SplitThePole : MonoBehaviour
         {
             if (tutorial)
             {
+                GameObject.Find("Time").GetComponent<LevelTimer>().tutorial = true;
                 playerOne.playerControl = false;
                 playerTwo.playerControl = false;
                 tutorialObj.SetActive(true);
