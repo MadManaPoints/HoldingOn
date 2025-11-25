@@ -10,6 +10,6 @@ public class PlayerReach : MonoBehaviour
 
     void Update()
     {
-        transform.position = handTarget.transform.position;
+        transform.position = new Vector3(handTarget.transform.position.x, handTarget.yPos, handTarget.transform.position.z);
     }
 }

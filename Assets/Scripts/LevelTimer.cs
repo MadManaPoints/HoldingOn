@@ -5,11 +5,12 @@ using UnityEngine.UI;
 using System.Collections;
 public class LevelTimer : MonoBehaviour
 {
+    public static LevelTimer Instance;
     GameManager gm;
     TextMeshProUGUI score;
     Animator anim;
     Animator controller;
-    int timeLeft = 200;
+    int timeLeft = 145;
     float second = 1.0f;
     float multiplier = 1.0f;
     ColorState state = ColorState.Default;
@@ -17,8 +18,14 @@ public class LevelTimer : MonoBehaviour
     enum ColorState
     {
         Default,
+        Green,
         Yellow,
         Red,
+    }
+
+    void Awake()
+    {
+        Instance = this;
     }
 
     void Start()
@@ -58,7 +65,7 @@ public class LevelTimer : MonoBehaviour
             state = ColorState.Default;
         }
 
-        if(tutorial) return;
+        if (tutorial) return;
 
         if (second >= 0f)
         {
@@ -91,6 +98,24 @@ public class LevelTimer : MonoBehaviour
         state = gm.tooFar ? ColorState.Yellow : ColorState.Default;
     }
 
+    public IEnumerator AddTime()
+    {
+        // Turn text red
+        state = ColorState.Green;
+        score.color = Color.green;
+
+        // Subtract seven points from timer
+        for (int i = 0; i < 5; i++)
+        {
+            timeLeft++;
+            // Wait for 0.1 seconds before the next iteration
+            yield return new WaitForSeconds(.1f);
+        }
+
+        // Turn text either yellow or magenta based on distance
+        state = gm.tooFar ? ColorState.Yellow : ColorState.Default;
+    }
+
     void StateHandler()
     {
         if (state == ColorState.Red)
@@ -100,6 +125,10 @@ public class LevelTimer : MonoBehaviour
         else if (state == ColorState.Yellow)
         {
             score.color = Color.yellow;
+        }
+        else if (state == ColorState.Green)
+        {
+            //score.color = Color.green;
         }
         else
         {

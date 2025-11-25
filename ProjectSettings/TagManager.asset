@@ -22,7 +22,7 @@ TagManager:
   - UI
   - 
   - isMiddle
-  - 
+  - isPole
   - isBar
   - isGround
   - isReachZone

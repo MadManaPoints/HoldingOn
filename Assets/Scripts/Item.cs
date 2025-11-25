@@ -1,6 +1,4 @@
 using System;
-using Unity.VisualScripting;
-using UnityEditor.Searcher;
 using UnityEngine;
 
 public class Item : MonoBehaviour

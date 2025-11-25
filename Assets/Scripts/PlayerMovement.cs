@@ -64,6 +64,9 @@ public class PlayerMovement : MonoBehaviour
     public Vector3 actualMove;
     PlayerMovement partner;
     public bool playerControl = true;
+    [SerializeField] CapsuleCollider armCol;
+    public bool r;
+    bool letGo;
 
     void Start()
     {
@@ -73,11 +76,13 @@ public class PlayerMovement : MonoBehaviour
         hand = GetComponentInChildren<TwoBoneIKConstraint>();
 
         playerNum = (!isPlayerTwo) ? "1" : "2"; // Choose control scheme for each player
+        attached = GameManager.Instance.bindPlayers;
     }
 
     void MyInput()
     {
         moveDir = new Vector3(Input.GetAxis("Horizontal"), 0f, -Input.GetAxis("Vertical"));
+        if (attached && moveDir.z < 0f) moveDir.z = 0f;
 
         // Listen for Jump input
         if (Input.GetButtonDown("Jump" + playerNum) && canJump && grounded)
@@ -87,27 +92,53 @@ public class PlayerMovement : MonoBehaviour
             //Invoke(nameof(ResetJump), jumpCooldown); // Wait before reseting Jump
         }
 
+        if (!letGo && !GameManager.Instance.bindPlayers)
+        {
+            r = false;
+            attached = false;
+            if (GetComponent<SpringJoint>() != null) Destroy(GetComponent<SpringJoint>());
+            letGo = true;
+        }
+
         if (Input.GetAxisRaw("Reach" + playerNum) > 0f || GameManager.Instance.bindPlayers)
         {
+            if (!r) r = true;
             hand.weight = 1.0f; // Blend animation with hand rig
         }
         else
         {
-            hand.weight = 0f;
+            if (r && (HandTarget.target.handsIn == 1 || HandTarget.target.handsIn == 2))
+            {
+                // Check to see if any hands are still in after a player releases
+                r = false;
+                HandTarget.target.handsIn--;
+                HandTarget.target.CheckHands(HandTarget.target.handsIn);
+            }
+
+            // Both players must release before they let go
+            if (!attached)
+            {
+                if (GetComponent<SpringJoint>() != null) Destroy(GetComponent<SpringJoint>());
+                hand.weight = 0f;
+            }
         }
 
         if (attached)
         {
+            //if (!armCol.enabled) armCol.enabled = true;
             state = PlayerState.holding;
+
             float raise = Input.GetAxisRaw("Raise" + playerNum);
             raiseHand = raise > 0f ? true : false;
         }
         else if ((Input.GetButton("Action" + playerNum) || Input.GetMouseButton(1)) && moveableObj != null)
         {
+            //if (armCol.enabled) armCol.enabled = false;
             state = PlayerState.pulling;
         }
         else
         {
+            //if (armCol.enabled) armCol.enabled = false;
             state = PlayerState.running;
         }
 
@@ -211,7 +242,16 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // Limit movement in air
-            if (!onIce) rb.linearVelocity = grounded ? actualMove : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+            //if (!onIce) rb.linearVelocity = grounded ? actualMove : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+
+            if (!onIce)
+            {
+                Vector3 v;
+                v = grounded ? actualMove : new Vector3(move.x * airMult, rb.linearVelocity.y, move.z * airMult);
+                rb.AddForce(v - rb.linearVelocity, ForceMode.VelocityChange);
+                //rb.maxLinearVelocity = moveSpeed;
+                //if (rb.linearVelocity.magnitude > moveSpeed) rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, moveSpeed);
+            }
 
             // Use force when sliding on ice
             else rb.AddForce(move);
@@ -227,11 +267,9 @@ public class PlayerMovement : MonoBehaviour
         if (moveDir != Vector3.zero && !Input.GetButton("Action" + playerNum) && state != PlayerState.pulling)
         {
             float angleDiff = Vector3.SignedAngle(transform.forward, moveDir, Vector3.up);
-            rb.angularVelocity = new Vector3(rb.angularVelocity.x, angleDiff * 0.2f, rb.angularVelocity.z);
-        }
-        else
-        {
-            rb.angularVelocity = Vector3.zero;
+            //rb.angularVelocity = new Vector3(rb.angularVelocity.x, angleDiff * 0.2f, rb.angularVelocity.z);
+            Vector3 aV = new Vector3(rb.angularVelocity.x, angleDiff, rb.angularVelocity.z);
+            rb.AddTorque(aV - rb.angularVelocity, ForceMode.Force);
         }
     }
 
@@ -240,6 +278,7 @@ public class PlayerMovement : MonoBehaviour
         if (state == PlayerState.pulling)
         {
             moveSpeed = 0.3f; // Pull speed
+            //moveSpeed = 0.1f;
 
             // Parent moveable object collider to player
             if (moveableObj != null) moveableObj.transform.parent = this.transform;
@@ -248,6 +287,7 @@ public class PlayerMovement : MonoBehaviour
         else if (state == PlayerState.running)
         {
             moveSpeed = 3.5f; // Default speed
+            //moveSpeed = 1.5f;
 
             // Unparent moveable object
             if (moveableObj != null) moveableObj.transform.parent = null;
@@ -256,6 +296,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             moveSpeed = 2.7f; // Speed while holding hands
+            //moveSpeed = 0.8f;
         }
     }
 

@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+
 
 public class GameManager : MonoBehaviour
 {
@@ -12,5 +14,11 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Application.Quit();
     }
 }

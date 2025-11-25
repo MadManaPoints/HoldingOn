@@ -1,5 +1,3 @@
-using Unity.VisualScripting;
-using UnityEditor.MPE;
 using UnityEngine;
 
 public class CamFollow : MonoBehaviour
@@ -30,13 +28,13 @@ public class CamFollow : MonoBehaviour
         float dist = Vector3.Distance(playerOne.transform.position, playerTwo.transform.position);
         float clampedDist = Mathf.Clamp(dist, minDist, maxDist);
 
-        float distFromPlayer = !playerOne.gameObject.GetComponent<PlayerMovement>().attached ? 3.2f : 2.5f;
+        float distFromPlayer = !playerOne.gameObject.GetComponent<PlayerMovement>().attached ? 4.0f : 2.5f;
 
         GameManager.Instance.tooFar = clampedDist > 12.0f;
 
         // Move camera based on player distance 
-        float rot = Map(clampedDist, minDist + 0.2f, maxDist, 10.0f, 65.0f);
-        float offsetY = Map(clampedDist, minDist, 10.0f, 3.0f, 9.0f);
+        float rot = Map(clampedDist, minDist + 0.2f, maxDist, 10.0f, 55.0f);
+        float offsetY = Map(clampedDist, minDist, 12.0f, 3.0f, 10.0f);
 
         //  MIGHT NOT NEED THIS ANYMORE
         //float closeOffsetZ = Map(clampedDist, minDist, maxDist, -2.0f, -6.0f);

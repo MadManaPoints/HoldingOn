@@ -1,6 +1,4 @@
 using System;
-using System.Security.Cryptography.X509Certificates;
-using UnityEditor.Search;
 using UnityEngine;
 
 public class Door : MonoBehaviour

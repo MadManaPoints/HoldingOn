@@ -17,5 +17,8 @@ public class DemoEnd : MonoBehaviour
         {
             SceneManager.LoadScene("CharacterSelection");
         }
+
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.R))
+            SceneManager.LoadScene("CharacterSelection");
     }
 }
